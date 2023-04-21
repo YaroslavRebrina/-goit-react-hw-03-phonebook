@@ -2,24 +2,23 @@ import React, { Component } from 'react';
 import { ContactsForm } from './ContactsWidget/ContactsForm';
 import { Filter } from './ContactsWidget/Filter';
 import { ContactItem } from './ContactsWidget/ContactItem';
-
+import { CONTACTS_KEY } from './constants';
 
 import css from './App.module.css';
 
 export class App extends Component {
-
-
   state = {
-    contacts: [
-      { id: 'id-1', name: 'Rosie Simpson', number: '459-12-56' },
-      { id: 'id-2', name: 'Hermione Kline', number: '443-89-12' },
-      { id: 'id-3', name: 'Eden Clements', number: '645-17-79' },
-      { id: 'id-4', name: 'Annie Copeland', number: '227-91-26' },
-    ],
+    contacts: [],
     filter: '',
   };
 
-  handlerSubmit = (name, number, id) => {
+  componentDidMount() {
+    const fetchedContacts =
+      JSON.parse(localStorage.getItem(CONTACTS_KEY)) || [];
+    this.setState({ contacts: fetchedContacts });
+  }
+
+  handlerSubmit = async (name, number, id) => {
     const { contacts } = this.state;
 
     if (contacts.find(contact => contact.name === name)) {
@@ -33,9 +32,13 @@ export class App extends Component {
       number,
     };
 
-    this.setState(prevState => ({
-      contacts: [contact, ...prevState.contacts],
-    }));
+    this.setState(
+      prevState => ({
+        contacts: [contact, ...prevState.contacts],
+      }),
+      () =>
+        localStorage.setItem(CONTACTS_KEY, JSON.stringify(this.state.contacts))
+    );
   };
 
   onFilterChange = value => {
@@ -47,7 +50,7 @@ export class App extends Component {
     const contactsAfterDelete = contacts.filter(
       contact => contact.id !== e.target.id
     );
-
+    localStorage.setItem(CONTACTS_KEY, JSON.stringify(contactsAfterDelete));
     this.setState({ contacts: contactsAfterDelete });
   };
 
